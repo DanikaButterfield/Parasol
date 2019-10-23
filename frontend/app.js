@@ -11,7 +11,8 @@ function createChecklists(lists) {
     let listItem = document.createElement("button")
     listItem.class = "checklist-button"
     listItem.id = list.id
-    listItem.innerHTML = `<img src="./img/list.svg"><br>${list.name}`
+    listItem.innerHTML = `<img src="./img/list.svg">
+    <p>${list.name}</p>`
     checklists.appendChild(listItem)
   })
 }
@@ -150,37 +151,38 @@ function submitAll() {
   })
 }
 
-function postList() {
+async function postList() {
   let listName = document.querySelector("#name").value;
-  fetch('http://localhost:3000/checklists', {
+  await fetch('http://localhost:3000/checklists', {
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     method: 'POST',
     body: JSON.stringify({
       name: listName,
     })
   })
+  let listItems = document.querySelectorAll(".item")
+  listItems.forEach(item => postItems(item))
   refresh()
-  postItems()
 }
 
-function postItems() {
-  let listItems = document.querySelectorAll(".item")
-  listItems.forEach(item => {
-    fetch("http://localhost:3000/checklists")
-      .then(response => response.json())
-      .then(checklist => {
-        let index = checklist[checklist.length - 1]
-            fetch('http://localhost:3000/items', {
-              headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-              method: 'POST',
-              body: JSON.stringify({
-                content: item.value,
-                checklist_id: index.id,
-              })
-            })
-        })
+async function postItems(item) {
+  await fetch("http://localhost:3000/checklists")
+  .then(response => response.json())
+  .then(checklist => {
+    initItems(item, checklist)
   })
-  refresh()
+}
+
+async function initItems(item, checklist) {
+  let index = checklist[checklist.length - 1]
+    await fetch('http://localhost:3000/items', {
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      method: 'POST',
+      body: JSON.stringify({
+        content: item.value,
+        checklist_id: index.id,
+      })
+    })
 }
 
 function updateAll(listID) {
@@ -241,8 +243,8 @@ function deleteList(id) {
       fetch(`http://localhost:3000/checklists/${id}`, {
         method: 'DELETE'
         })
-        .then(sleep(1000))
-        .then(refresh())
+          .then(refresh())
+          .then(refresh())
       }
     }
   )
