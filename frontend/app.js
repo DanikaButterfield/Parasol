@@ -66,7 +66,7 @@ function createItems(checklist, checklistID, checklistItems) {
 
 function initList() {
   document.querySelector("#list-container").innerHTML = `
-  <button class="list-edit" id="delete">Delete Checklist: <img src="./img/delete.svg" class="small-image"></button>
+  <button class="list-edit" id="delete">Delete Checklist: <img src="./img/delete.svg" class="tiny-image"></button>
   <input class="list-edit" type="submit" id="commit-changes" value="Submit Changes">
   <p id="list-name">
 
