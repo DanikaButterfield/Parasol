@@ -6,18 +6,30 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function createChecklists(lists) {
   let checklists = document.querySelector("#cl")
-  checklists.innerHTML = ""
+  checklists.innerHTML = '';
   lists.forEach(list => {
     let listItem = document.createElement("button")
     listItem.className = "checklist-button"
     listItem.id = list.id
     listItem.innerHTML = `<img src="./img/list.svg">
-    <p>${list.name}</p>`
+    <p id="name${list.id}">${list.name}</p>`
     checklists.appendChild(listItem)
   })
 }
 
-function createItems(checklist, checklistItems) {
+document.querySelector("#cl").addEventListener("click", () => {
+  event.preventDefault()
+  if (event.target.type === "submit") {
+    let showList = document.querySelector("#checklist-overlay")
+    showList.style.display = "flex";
+    let id = event.target.id;
+    fetch(`http://localhost:3000/checklists/${id}`)
+      .then(response => response.json())
+      .then(checklist => createItems(checklist, id, checklist.items))
+    }
+})
+
+function createItems(checklist, checklistID, checklistItems) {
   initList()
   let listName = document.querySelector("#list-name")
   listName.innerHTML = ``
@@ -48,8 +60,8 @@ function createItems(checklist, checklistItems) {
   initCheckbox()
   initEdit(listName)
   addUpdateItem()
-  updateAll(checklist.id)
-  deleteList(checklist.id)
+  updateAll(checklistID)
+  deleteList(checklistID)
 }
 
 function initList() {
@@ -120,18 +132,6 @@ document.querySelectorAll(".close-btn").forEach(closeButton => {
   })
 })
 
-document.querySelector("#cl").addEventListener("click", () => {
-  event.preventDefault()
-  if (event.target.type === "submit") {
-    let showList = document.querySelector("#checklist-overlay")
-    showList.style.display = "flex";
-    let id = event.target.id;
-    fetch(`http://localhost:3000/checklists/${id}`)
-      .then(response => response.json())
-      .then(checklist => createItems(checklist, checklist.items))
-    }
-})
-
 function addItem() {
   document.querySelector("#add-item").addEventListener("click", () => {
     event.preventDefault()
@@ -194,6 +194,7 @@ function updateAll(listID) {
   document.querySelector("#list-container").addEventListener("submit", () => {
     event.preventDefault();
     let listName = document.querySelector("#edit-name").value;
+    document.getElementById(`name${listID}`).innerText = listName
     fetch(`http://localhost:3000/checklists/${listID}`, {
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       method: 'PATCH',
@@ -202,32 +203,20 @@ function updateAll(listID) {
         })
       })
     let listItems = document.querySelectorAll(".edit-item")
-    let itemArray = []
-    listItems.forEach(item => {
-      let itemObject = {content: item.value, checklist_id: listID}
-      itemArray.push(itemObject)
-      }),
-      fetch('http://localhost:3000/items', {
-        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-        method: 'POST',
-        body: JSON.stringify({item: itemArray})
-      })
-      refresh()
+      if (listItems.length != 0) {
+      let itemArray = []
+      listItems.forEach(item => {
+        let itemObject = {content: item.value, checklist_id: listID}
+        itemArray.push(itemObject)
+        }),
+        fetch('http://localhost:3000/items', {
+          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+          method: 'POST',
+          body: JSON.stringify({item: itemArray})
+        })
+      }
       close()
     })
-}
-
-
-async function refresh() {
-  let refresh = await fetch("http://localhost:3000/checklists")
-  let lists = await refresh.json()
-  createChecklists(lists)
-}
-
-function close() {
-  document.querySelectorAll(".overlay").forEach(overlay => {
-    overlay.style.display = "none";
-  })
 }
 
 function deleteList(id) {
@@ -238,11 +227,24 @@ function deleteList(id) {
       fetch(`http://localhost:3000/checklists/${id}`, {
         method: 'DELETE'
         })
-      refresh()
+      let remove = document.getElementById(id)
+      remove.parentNode.removeChild(remove)
       close()
       }
     }
   )
+}
+
+function refresh() {
+  fetch("http://localhost:3000/checklists")
+    .then(response => response.json())
+    .then(lists => createChecklists(lists))
+}
+
+function close() {
+  document.querySelectorAll(".overlay").forEach(overlay => {
+    overlay.style.display = "none";
+  })
 }
 
 function sleep(milliseconds) {
