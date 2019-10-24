@@ -6,10 +6,8 @@ class ItemsController < ApplicationController
   end
 
   def create
-    @item = Item.create({
-      content: params[:content],
-      checklist_id: params[:checklist_id]
-    })
+    # byebug
+    @item = Item.create(item_params)
   end
   
   def show
@@ -20,5 +18,12 @@ class ItemsController < ApplicationController
 
   def destroy
     Item.destroy(params[:id])
+  end
+
+  private
+  def item_params
+    params.require(:item).map do |i|
+      i.permit(:content, :checklist_id)
+    end
   end
 end

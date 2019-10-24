@@ -1,7 +1,8 @@
-/* body {
-  display: flex;
-  justify-content: center;
-} */
+body {
+  background: url("./img/Parasol.png") top center;
+  margin: 0;
+  padding: 0;
+}
 
 header {
   display: flex;
@@ -9,10 +10,20 @@ header {
   font-size: 28pt;
 }
 
+main {
+  padding: 200px;
+  padding-top: 300px;
+  padding-bottom: 0;
+}
+
 ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
+}
+
+.check-off {
+  text-align: left;
 }
 
 #add-checklist {
@@ -25,16 +36,15 @@ ul {
   padding: 10px;
 }
 
-main {
+#checklists {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
-#checklists {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+.checklist-button img, .checklist-button p {
+  pointer-events: none;
 }
 
 #new-checklist, #checklist-overlay{
@@ -70,14 +80,17 @@ button {
   justify-content: center;
 }
 
-.close-btn img {
-  width: 50px;
+.close-btn {
   position: absolute;
   top: 10px;
   right: 10px;
 }
 
-#list-form {
+.close-btn img {
+  width: 50px;
+}
+
+#name-form, #items-form {
   display: flex;
   flex-direction: column;
   background-color: white;

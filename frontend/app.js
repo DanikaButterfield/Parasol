@@ -9,7 +9,7 @@ function createChecklists(lists) {
   checklists.innerHTML = ""
   lists.forEach(list => {
     let listItem = document.createElement("button")
-    listItem.class = "checklist-button"
+    listItem.className = "checklist-button"
     listItem.id = list.id
     listItem.innerHTML = `<img src="./img/list.svg">
     <p>${list.name}</p>`
@@ -37,11 +37,14 @@ function createItems(checklist, checklistItems) {
   listName.appendChild(name)
   let currentList = document.querySelector("#current-list")
   currentList.innerHTML = ``
+  let left = document.createElement("left")
+  currentList.appendChild(left)
   checklistItems.forEach(item => {
     let listItem = document.createElement("li")
     listItem.innerHTML = `<input type="checkbox" name="check-off" class="check-off"> ${item.content}`
     currentList.appendChild(listItem)
   })
+  currentList.appendChild(left)
   initCheckbox()
   initEdit(listName)
   addUpdateItem()
@@ -60,8 +63,7 @@ function initList() {
   <ul id="current-list">
 
   </ul>
-  <button class="list-edit" id="add-update-item"><img src="./img/add.svg" class="small-image"></button>
-  <input class="list-edit edit-item" id="edit-items">`
+  <button class="list-edit" id="add-update-item">Add Item: <img src="./img/add.svg" class="small-image"></button>`
 }
 
 function initCheckbox() {
@@ -87,49 +89,56 @@ function initEdit(listName) {
 }
 
 document.querySelector("#add-checklist").addEventListener("click", () => {
+  event.preventDefault();
+  event.stopPropagation();
   makeInputForm()
   let newList = document.querySelector("#new-checklist")
-  newList.style.display = "flex";
+  newList.style.display = "flex"
 })
 
+const name_list = document.querySelector("#name-form")
+const items_list = document.querySelector("#items-form")
+
 function makeInputForm() {
-  let inputForm = document.querySelector("#list-form")
-  inputForm.innerHTML = `
-  <input id="submit" type="submit" value="Add New List"></submit>
+  name_list.innerHTML = `
+  <input id="submit" type="submit" value="Add New Checklist"></submit>
   <label for="name">Name:</label>
-  <input id="name" name="name" required>
-  <br>
+  <input id="name" name="name" required>`
+  items_list.innerHTML = `
+  <input id="submit" type="submit" value="Add Items"></submit>
   <label for="item">Items: <button id="add-item"><img src="./img/add.svg" class="small-image"></button></label>
   <input class="item" name="item" required>`
-  addItem()
-  submitAll()
+  items_list.style = "display: none;"
+  name_list.style = "display: flex;"
 }
 
 document.querySelectorAll(".close-btn").forEach(closeButton => {
   closeButton.addEventListener("click", () => {
     refresh()
+    close()
     initList()
   })
 })
 
 document.querySelector("#cl").addEventListener("click", () => {
   event.preventDefault()
-  let showList = document.querySelector("#checklist-overlay")
-  showList.style.display = "flex";
-  let id = event.target.parentNode.id;
-  fetch(`http://localhost:3000/checklists/${id}`)
-    .then(response => response.json())
-    .then(checklist => createItems(checklist, checklist.items))
+  if (event.target.type === "submit") {
+    let showList = document.querySelector("#checklist-overlay")
+    showList.style.display = "flex";
+    let id = event.target.id;
+    fetch(`http://localhost:3000/checklists/${id}`)
+      .then(response => response.json())
+      .then(checklist => createItems(checklist, checklist.items))
+    }
 })
 
 function addItem() {
   document.querySelector("#add-item").addEventListener("click", () => {
     event.preventDefault()
-    let inputForm = document.querySelector("#list-form")
     let newItem = document.createElement("input")
     newItem.className = "item"
     newItem.name = "item"
-    inputForm.appendChild(newItem)
+    items_list.appendChild(newItem)
   })
 }
 
@@ -144,96 +153,82 @@ function addUpdateItem() {
   })
 }
 
-function submitAll() {
-  document.querySelector("#list-form").addEventListener("submit", () => {
-    event.preventDefault();
-    postList()
-  })
-}
-
-async function postList() {
+name_list.addEventListener("submit", () => {
+  event.preventDefault()
   let listName = document.querySelector("#name").value;
-  await fetch('http://localhost:3000/checklists', {
+  fetch('http://localhost:3000/checklists', {
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     method: 'POST',
     body: JSON.stringify({
       name: listName,
     })
   })
-  let listItems = document.querySelectorAll(".item")
-  listItems.forEach(item => postItems(item))
-  refresh()
-}
+  name_list.style = "display: none;"
+  items_list.style = "display: flex;"
+  addItem()
+})
 
-async function postItems(item) {
-  await fetch("http://localhost:3000/checklists")
-  .then(response => response.json())
-  .then(checklist => {
-    initItems(item, checklist)
-  })
-}
-
-async function initItems(item, checklist) {
-  let index = checklist[checklist.length - 1]
-    await fetch('http://localhost:3000/items', {
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      method: 'POST',
-      body: JSON.stringify({
-        content: item.value,
-        checklist_id: index.id,
+items_list.addEventListener("submit", () => {
+  event.preventDefault()
+  fetch('http://localhost:3000/checklists')
+    .then(response => response.json())
+    .then(checklists => {
+      let listItems = document.querySelectorAll(".item")
+      let itemArray = []
+      let index = checklists[checklists.length - 1].id
+      listItems.forEach(item => {
+        let itemObject = {content: item.value, checklist_id: index}
+        itemArray.push(itemObject)
+      }),
+      fetch('http://localhost:3000/items', {
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        method: 'POST',
+        body: JSON.stringify({item: itemArray})
       })
+    refresh();
+    close();
     })
-}
+})
 
 function updateAll(listID) {
   document.querySelector("#list-container").addEventListener("submit", () => {
     event.preventDefault();
-    updateList(listID)
-  })
-}
-
-function updateList(listID) {
-  let listName = document.querySelector("#edit-name").value;
-  fetch(`http://localhost:3000/checklists/${listID}`, {
-    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-    method: 'PATCH',
-    body: JSON.stringify({
-      name: listName,
-    })
-  })
-  refresh()
-  updateItems(listID)
-}
-
-function updateItems(listID) {
-  let listItems = document.querySelectorAll(".edit-item")
-  listItems.forEach(item => {
-    fetch("http://localhost:3000/checklists")
-      .then(response => response.json())
-      .then(checklist => {
-        fetch('http://localhost:3000/items', {
-          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-          method: 'POST',
-          body: JSON.stringify({
-            content: item.value,
-            checklist_id: listID,
-            })
-          })
+    let listName = document.querySelector("#edit-name").value;
+    fetch(`http://localhost:3000/checklists/${listID}`, {
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: listName,
         })
+      })
+    let listItems = document.querySelectorAll(".edit-item")
+    let itemArray = []
+    listItems.forEach(item => {
+      let itemObject = {content: item.value, checklist_id: listID}
+      itemArray.push(itemObject)
+      }),
+      fetch('http://localhost:3000/items', {
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        method: 'POST',
+        body: JSON.stringify({item: itemArray})
+      })
+      refresh()
+      close()
     })
-  refresh()
 }
 
 
-function refresh() {
+async function refresh() {
+  let refresh = await fetch("http://localhost:3000/checklists")
+  let lists = await refresh.json()
+  createChecklists(lists)
+}
+
+function close() {
   document.querySelectorAll(".overlay").forEach(overlay => {
     overlay.style.display = "none";
   })
-  fetch("http://localhost:3000/checklists")
-    .then(response => response.json())
-    .then(lists => createChecklists(lists))
 }
-
 
 function deleteList(id) {
   document.querySelector("#delete").addEventListener("click", () => {
@@ -243,8 +238,8 @@ function deleteList(id) {
       fetch(`http://localhost:3000/checklists/${id}`, {
         method: 'DELETE'
         })
-          .then(refresh())
-          .then(refresh())
+      refresh()
+      close()
       }
     }
   )

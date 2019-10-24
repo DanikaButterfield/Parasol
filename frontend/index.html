@@ -8,30 +8,29 @@
   <title>Parasol</title>
 </head>
 <body>
-  <br><br><br>
-  <header>Parasol</header>
-  <br>
-  <main>
-    <div id="checklists">
-      <span id="cl">
+    <main>
+      <div id="checklists" width="50%">
+        <button id="add-checklist">
+          <img src="./img/add.svg">
+          <p>Add Checklist</p>
+        </button>
+        <span id="cl">
 
-      </span>
-      <button id="add-checklist">
-        <img src="./img/add.svg">
-        <p>Add Checklist</p>
-      </button>
-    </div>
-    <div class="overlay" id="new-checklist">
-      <button class="close-btn"><img src="./img/close.svg"></button>
-      <form id="list-form">
-      </form>
-    </div>
-    <div class="overlay" id="checklist-overlay">
-      <button class="close-btn"><img src="./img/close.svg"></button>
-      <form id="list-container">
-      </form>
-    </div>
-  </main>
+        </span>
+      </div>
+      <div class="overlay" id="new-checklist">
+        <button class="close-btn"><img src="./img/close.svg"></button>
+        <form id="name-form">
+        </form>
+        <form id="items-form">
+        </form>
+      </div>
+      <div class="overlay" id="checklist-overlay">
+        <button class="close-btn"><img src="./img/close.svg"></button>
+        <form id="list-container">
+        </form>
+      </div>
+    </main>
   <script src="app.js"></script>
 </body>
 </html>
