@@ -8,7 +8,6 @@ body {
 header {
   display: flex;
   justify-content: center;
-  pointer-events: none;
 }
 
 main {
@@ -49,7 +48,7 @@ ul {
   align-items: center;
 }
 
-.checklist-button img, .checklist-button p {
+header, .checklist-button img, .checklist-button p, #add-checklist img, #add-checklist p #close-btn img {
   pointer-events: none;
 }
 
@@ -83,6 +82,12 @@ button {
 
 .tiny-image {
   width: 10px;
+}
+
+.delete-item {
+  display: none;
+  background: transparent;
+  border: none;
 }
 
 #new-button {
@@ -119,5 +124,5 @@ button {
   align-items: center;
   background-color: white;
   padding: 10px;
-  width: 200px;
+  min-width: 200px;
 }

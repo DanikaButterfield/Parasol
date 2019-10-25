@@ -31,6 +31,7 @@ document.querySelector("#cl").addEventListener("click", () => {
 
 function createItems(checklist, checklistID, checklistItems) {
   initList()
+  document.querySelector("#list-container").listID = checklistID
   let listName = document.querySelector("#list-name")
   listName.innerHTML = ``
   listName.style = "display: inline;"
@@ -53,14 +54,14 @@ function createItems(checklist, checklistID, checklistItems) {
   currentList.appendChild(left)
   checklistItems.forEach(item => {
     let listItem = document.createElement("li")
-    listItem.innerHTML = `<input type="checkbox" name="check-off" class="check-off"> ${item.content}`
+    listItem.id = `item${item.id}`
+    listItem.innerHTML = `<input type="checkbox" name="check-off" class="check-off"><button class="delete-item"><img class="small-image" src="./img/delete.svg"></button> ${item.content}`
     currentList.appendChild(listItem)
   })
   currentList.appendChild(left)
   initCheckbox()
   initEdit(listName)
   addUpdateItem()
-  updateAll(checklistID)
   deleteList(checklistID)
 }
 
@@ -92,11 +93,32 @@ function initCheckbox() {
 function initEdit(listName) {
   document.querySelector("#edit-button").addEventListener("click", () => {
     event.preventDefault();
+    document.querySelectorAll(".delete-item").forEach(button => {
+      button.style = "display: inline;"
+    })
+    document.querySelectorAll(".check-off").forEach(checkbox => {
+      checkbox.style = "display: none;"
+    })
     listName.style = "display: none;"
     document.querySelectorAll(".list-edit").forEach(edit => {
       edit.style = "display: inline;"
     })
     document.querySelector("#edit-name").value = listName.innerText
+    document.querySelectorAll(".delete-item").forEach(button => {
+      button.addEventListener("click", () => {
+        event.preventDefault()
+        let deleteItem = button.parentNode
+        deleteListItem(deleteItem.id.replace("item", ""))
+        deleteItem.id = "delete-me"
+        deleteItem.parentNode.removeChild(document.getElementById("delete-me"))
+      })
+    })
+  })
+}
+
+function deleteListItem(id) {
+  fetch(`http://localhost:3000/items/${id}`, {
+    method: 'DELETE'
   })
 }
 
@@ -190,34 +212,33 @@ items_list.addEventListener("submit", () => {
     })
 })
 
-function updateAll(listID) {
-  document.querySelector("#list-container").addEventListener("submit", () => {
-    event.preventDefault();
-    let listName = document.querySelector("#edit-name").value;
-    document.getElementById(`name${listID}`).innerText = listName
-    fetch(`http://localhost:3000/checklists/${listID}`, {
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      method: 'PATCH',
-      body: JSON.stringify({
-        name: listName,
-        })
+document.querySelector("#list-container").addEventListener("submit", () => {
+  event.preventDefault();
+  let listID = event.target.listID
+  let listName = document.querySelector("#edit-name").value;
+  document.getElementById(`name${listID}`).innerText = listName
+  fetch(`http://localhost:3000/checklists/${listID}`, {
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    method: 'PATCH',
+    body: JSON.stringify({
+      name: listName,
       })
-    let listItems = document.querySelectorAll(".edit-item")
-      if (listItems.length != 0) {
-      let itemArray = []
-      listItems.forEach(item => {
-        let itemObject = {content: item.value, checklist_id: listID}
-        itemArray.push(itemObject)
-        }),
-        fetch('http://localhost:3000/items', {
-          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-          method: 'POST',
-          body: JSON.stringify({item: itemArray})
-        })
-      }
-      close()
     })
-}
+  let listItems = document.querySelectorAll(".edit-item")
+    if (listItems.length != 0) {
+    let itemArray = []
+    listItems.forEach(item => {
+      let itemObject = {content: item.value, checklist_id: listID}
+      itemArray.push(itemObject)
+      }),
+      fetch('http://localhost:3000/items', {
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        method: 'POST',
+        body: JSON.stringify({item: itemArray})
+      })
+    }
+    close()
+  })
 
 function deleteList(id) {
   document.querySelector("#delete").addEventListener("click", () => {
@@ -245,13 +266,4 @@ function close() {
   document.querySelectorAll(".overlay").forEach(overlay => {
     overlay.style.display = "none";
   })
-}
-
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
 }
