@@ -11,7 +11,7 @@ header {
 }
 
 main {
-  padding: 200px;
+  padding: 300px;
   padding-top: 0;
   padding-bottom: 0;
 }
@@ -46,6 +46,7 @@ ul {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: silver;
 }
 
 header, .checklist-button img, .checklist-button p, #add-checklist img, #add-checklist p, .close-btn img {
