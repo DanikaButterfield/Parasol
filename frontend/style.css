@@ -48,7 +48,7 @@ ul {
   align-items: center;
 }
 
-header, .checklist-button img, .checklist-button p, #add-checklist img, #add-checklist p #close-btn img {
+header, .checklist-button img, .checklist-button p, #add-checklist img, #add-checklist p .close-btn img {
   pointer-events: none;
 }
 
